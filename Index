@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACSM Training Zone Heart Rate Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-button:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button[type="button"] {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-calculate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-reset {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-label {
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .result-range {
+            font-size: 18px;
+            font-weight: bold;
+            color: #764ba2;
+            margin-top: 5px;
+        }
+
+        .zone {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .zone-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .zone-range {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .zone.light {
+            border-left-color: #90ee90;
+        }
+
+        .zone.moderate {
+            border-left-color: #ffa500;
+        }
+
+        .zone.vigorous {
+            border-left-color: #ff6347;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+            color: #1565c0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .formula {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #333;
+            overflow-x: auto;
+        }
+
+        .intensity-slider-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider-value {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab-button {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💓 ACSM Training Zone Heart Rate Calculator</h1>
+        <p class="subtitle">Calculate your personalized training zones based on American College of Sports Medicine guidelines</p>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('method1')">Method 1: % HRmax</button>
+            <button class="tab-button" onclick="switchTab('method2')">Method 2: Karvonen (HRR)</button>
+            <button class="tab-button" onclick="switchTab('info')">Information</button>
+        </div>
+
+        <!-- Method 1: Percentage of HRmax -->
+        <div id="method1" class="tab-content active">
+            <div class="info-box">
+                <strong>Method 1: Percentage of Maximum Heart Rate (%HRmax)</strong><br>
+                This method calculates training zones as percentages of your estimated maximum heart rate. Simple and commonly used.
+            </div>
+
+            <div class="input-group">
+                <label for="age1">Age (years)</label>
+                <input type="number" id="age1" placeholder="e.g., 30" min="1" max="120">
+            </div>
+
+            <div class="input-group">
+                <label for="formula1">HRmax Formula</label>
+                <select id="formula1">
+                    <option value="standard">Standard: HRmax = 220 - age</option>
+                    <option value="accurate">More Accurate: HRmax = 208 - (0.7 × age)</option>
+                </select>
+            </div>
+
+            <div class="intensity-slider-group">
+                <label for="intensity1">Intensity Level: <span id="intensityValue1">50</span>%</label>
+                <input type="range" id="intensity1" min="30" max="95" value="50" oninput="updateIntensityValue('intensity1', 'intensityValue1')">
+                <div class="slider-value">
+                    <span>30% (Light)</span>
+                    <span>95% (Vigorous)</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-calculate" onclick="calculateMethod1()">Calculate</button>
+                <button type="button" class="btn-reset" onclick="resetForm1()">Reset</button>
+            </div>
+
+            <div id="results1" class="results">
+                <div class="result-item">
+                    <div class="result-label">Maximum Heart Rate (HRmax)</div>
+                    <div class="result-value" id="hrmax1">—</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Target Heart Rate (at <span id="targetIntensity1">50</span>%)</div>
+                    <div class="result-range" id="targetHR1">—</div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <div class="result-label">ACSM Training Zones</div>
+                    <div class="zone light">
+                        <div class="zone-name">🟢 Light Intensity</div>
+                        <div class="zone-range" id="lightZone1">57-63% HRmax</div>
+                    </div>
+                    <div class="zone moderate">
+                        <div class="zone-name">🟠 Moderate Intensity</div>
+                        <div class="zone-range" id="moderateZone1">64-76% HRmax</div>
+                    </div>
+                    <div class="zone vigorous">
+                        <div class="zone-name">🔴 Vigorous Intensity</div>
+                        <div class="zone-range" id="vigorousZone1">77-95% HRmax</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Method 2: Heart Rate Reserve (Karvonen) -->
+        <div id="method2" class="tab-content">
+            <div class="info-box">
+                <strong>Method 2: Heart Rate Reserve / Karvonen Method</strong><br>
+                This method uses both resting and maximum heart rates for more personalized training zones. More accurate than %HRmax alone.
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="age2">Age (years)</label>
+                    <input type="number" id="age2" placeholder="e.g., 30" min="1" max="120">
+                </div>
+                <div class="input-group">
+                    <label for="rhr2">Resting Heart Rate (bpm)</label>
+                    <input type="number" id="rhr2" placeholder="e.g., 60" min="20" max="120">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="formula2">HRmax Formula</label>
+                <select id="formula2">
+                    <option value="standard">Standard: HRmax = 220 - age</option>
+                    <option value="accurate">More Accurate: HRmax = 208 - (0.7 × age)</option>
+                </select>
+            </div>
+
+            <div class="intensity-slider-group">
+                <label for="intensity2">Intensity Level: <span id="intensityValue2">50</span>%</label>
+                <input type="range" id="intensity2" min="30" max="89" value="50" oninput="updateIntensityValue('intensity2', 'intensityValue2')">
+                <div class="slider-value">
+                    <span>30% (Light)</span>
+                    <span>89% (Vigorous)</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-calculate" onclick="calculateMethod2()">Calculate</button>
+                <button type="button" class="btn-reset" onclick="resetForm2()">Reset</button>
+            </div>
+
+            <div id="results2" class="results">
+                <div class="result-item">
+                    <div class="result-label">Maximum Heart Rate (HRmax)</div>
+                    <div class="result-value" id="hrmax2">—</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Heart Rate Reserve (HRR)</div>
+                    <div class="result-value" id="hrr2">—</div>
+                    <div style="color: #666; font-size: 13px; margin-top: 5px;">HRR = HRmax - RHR</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Target Heart Rate (at <span id="targetIntensity2">50</span>%)</div>
+                    <div class="result-range" id="targetHR2">—</div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <div class="result-label">ACSM Training Zones</div>
+                    <div class="zone light">
+                        <div class="zone-name">🟢 Light Intensity</div>
+                        <div class="zone-range" id="lightZone2">30-39% HRR</div>
+                    </div>
+                    <div class="zone moderate">
+                        <div class="zone-name">🟠 Moderate Intensity</div>
+                        <div class="zone-range" id="moderateZone2">40-59% HRR</div>
+                    </div>
+                    <div class="zone vigorous">
+                        <div class="zone-name">🔴 Vigorous Intensity</div>
+                        <div class="zone-range" id="vigorousZone2">60-89% HRR</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Tab -->
+        <div id="info" class="tab-content">
+            <h2 style="color: #333; margin-bottom: 20px;">Understanding ACSM Training Zones</h2>
+
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">📊 Method 1: Percentage of HRmax</h3>
+                <p style="color: #666; margin-bottom: 15px;">The simplest method that uses only age to estimate maximum heart rate.</p>
+                
+                <div class="formula">HRmax = 220 - age<br/>or<br/>HRmax = 208 - (0.7 × age) [more accurate]</div>
+
+                <p style="color: #666; margin-bottom: 15px;">Then calculate target HR:</p>
+                <div class="formula">Target HR = HRmax × Intensity %</div>
+
+                <h4 style="color: #333; margin-top: 20px; margin-bottom: 10px;">ACSM Training Zones (%HRmax):</h4>
+                <ul style="color: #666; margin-left: 20px; line-height: 1.8;">
+                    <li><strong>🟢 Light:</strong> 57-63% HRmax (low intensity, recovery)</li>
+                    <li><strong>🟠 Moderate:</strong> 64-76% HRmax (sustainable pace, conversation possible)</li>
+                    <li><strong>🔴 Vigorous:</strong> 77-95% HRmax (high intensity, difficult to talk)</li>
+                </ul>
+            </div>
+
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">💪 Method 2: Heart Rate Reserve (Karvonen Method)</h3>
+                <p style="color: #666; margin-bottom: 15px;">More accurate method that accounts for resting heart rate, providing personalized zones.</p>
+
+                <div style="margin-bottom: 15px;">
+                    <p style="color: #666; margin-bottom: 10px;"><strong>Step 1: Calculate HRmax</strong></p>
+                    <div class="formula">HRmax = 220 - age</div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <p style="color: #666; margin-bottom: 10px;"><strong>Step 2: Calculate Heart Rate Reserve</strong></p>
+                    <div class="formula">HRR = HRmax - RHR</div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <p style="color: #666; margin-bottom: 10px;"><strong>Step 3: Calculate Target Heart Rate</strong></p>
+                    <div class="formula">Target HR = RHR + (HRR × Intensity %)</div>
+                </div>
+
+                <h4 style="color: #333; margin-top: 20px; margin-bottom: 10px;">ACSM Training Zones (%HRR):</h4>
+                <ul style="color: #666; margin-left: 20px; line-height: 1.8;">
+                    <li><strong>🟢 Light:</strong> 30-39% HRR (easy pace, low stress)</li>
+                    <li><strong>🟠 Moderate:</strong> 40-59% HRR (aerobic zone, fat burning)</li>
+                    <li><strong>🔴 Vigorous:</strong> 60-89% HRR (high intensity, VO2max training)</li>
+                </ul>
+            </div>
+
+            <div style="background: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <h4 style="color: #856404; margin-bottom: 10px;">⚠️ Important Notes:</h4>
+                <ul style="color: #856404; margin-left: 20px; line-height: 1.8;">
+                    <li>Max HR equations are estimates; individual variation exists</li>
+                    <li>Resting heart rate should be measured in the morning, before getting up</li>
+                    <li>Consult healthcare provider before starting new exercise program</li>
+                    <li>These zones are general guidelines; adjust based on personal fitness level</li>
+                    <li>Medications and health conditions may affect heart rate response</li>
+                </ul>
+            </div>
+
+            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; border-left: 4px solid #4caf50; margin-top: 20px;">
+                <h4 style="color: #2e7d32; margin-bottom: 10px;">💡 How to Use Your Training Zones:</h4>
+                <ul style="color: #2e7d32; margin-left: 20px; line-height: 1.8;">
+                    <li><strong>Recovery:</strong> Light zone (57-63% HRmax or 30-39% HRR)</li>
+                    <li><strong>Aerobic Base Building:</strong> Moderate zone (64-76% HRmax or 40-59% HRR)</li>
+                    <li><strong>Fitness Improvement:</strong> Vigorous zone (77-95% HRmax or 60-89% HRR)</li>
+                    <li><strong>Mixed Training:</strong> Combine different zones for variety</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function updateIntensityValue(inputId, labelId) {
+            document.getElementById(labelId).textContent = document.getElementById(inputId).value;
+        }
+
+        function calculateMethod1() {
+            const age = parseFloat(document.getElementById('age1').value);
+            const formula = document.getElementById('formula1').value;
+            const intensity = parseFloat(document.getElementById('intensity1').value);
+
+            if (!age || age < 1 || age > 120) {
+                alert('Please enter a valid age between 1 and 120');
+                return;
+            }
+
+            // Calculate HRmax
+            let hrmax;
+            if (formula === 'standard') {
+                hrmax = 220 - age;
+            } else {
+                hrmax = 208 - (0.7 * age);
+            }
+
+            // Calculate target HR
+            const targetHR = Math.round(hrmax * (intensity / 100));
+
+            // Calculate zones
+            const lightMin = Math.round(hrmax * 0.57);
+            const lightMax = Math.round(hrmax * 0.63);
+            const moderateMin = Math.round(hrmax * 0.64);
+            const moderateMax = Math.round(hrmax * 0.76);
+            const vigorousMin = Math.round(hrmax * 0.77);
+            const vigorousMax = Math.round(hrmax * 0.95);
+
+            // Display results
+            document.getElementById('hrmax1').textContent = Math.round(hrmax) + ' bpm';
+            document.getElementById('targetIntensity1').textContent = intensity;
+            document.getElementById('targetHR1').textContent = targetHR + ' bpm (' + intensity + '% of HRmax)';
+            document.getElementById('lightZone1').textContent = `${lightMin}-${lightMax} bpm (57-63%)`;
+            document.getElementById('moderateZone1').textContent = `${moderateMin}-${moderateMax} bpm (64-76%)`;
+            document.getElementById('vigorousZone1').textContent = `${vigorousMin}-${vigorousMax} bpm (77-95%)`;
+            
+            document.getElementById('results1').classList.add('show');
+        }
+
+        function calculateMethod2() {
+            const age = parseFloat(document.getElementById('age2').value);
+            const rhr = parseFloat(document.getElementById('rhr2').value);
+            const formula = document.getElementById('formula2').value;
+            const intensity = parseFloat(document.getElementById('intensity2').value);
+
+            if (!age || age < 1 || age > 120) {
+                alert('Please enter a valid age between 1 and 120');
+                return;
+            }
+
+            if (!rhr || rhr < 20 || rhr > 120) {
+                alert('Please enter a valid resting heart rate between 20 and 120 bpm');
+                return;
+            }
+
+            // Calculate HRmax
+            let hrmax;
+            if (formula === 'standard') {
+                hrmax = 220 - age;
+            } else {
+                hrmax = 208 - (0.7 * age);
+            }
+
+            // Calculate HRR
+            const hrr = hrmax - rhr;
+
+            // Calculate target HR
+            const targetHR = Math.round(rhr + (hrr * (intensity / 100)));
+
+            // Calculate zones
+            const lightMin = Math.round(rhr + (hrr * 0.30));
+            const lightMax = Math.round(rhr + (hrr * 0.39));
+            const moderateMin = Math.round(rhr + (hrr * 0.40));
+            const moderateMax = Math.round(rhr + (hrr * 0.59));
+            const vigorousMin = Math.round(rhr + (hrr * 0.60));
+            const vigorousMax = Math.round(rhr + (hrr * 0.89));
+
+            // Display results
+            document.getElementById('hrmax2').textContent = Math.round(hrmax) + ' bpm';
+            document.getElementById('hrr2').textContent = Math.round(hrr) + ' bpm';
+            document.getElementById('targetIntensity2').textContent = intensity;
+            document.getElementById('targetHR2').textContent = targetHR + ' bpm (' + intensity + '% of HRR)';
+            document.getElementById('lightZone2').textContent = `${lightMin}-${lightMax} bpm (30-39%)`;
+            document.getElementById('moderateZone2').textContent = `${moderateMin}-${moderateMax} bpm (40-59%)`;
+            document.getElementById('vigorousZone2').textContent = `${vigorousMin}-${vigorousMax} bpm (60-89%)`;
+            
+            document.getElementById('results2').classList.add('show');
+        }
+
+        function resetForm1() {
+            document.getElementById('age1').value = '';
+            document.getElementById('formula1').value = 'standard';
+            document.getElementById('intensity1').value = '50';
+            document.getElementById('intensityValue1').textContent = '50';
+            document.getElementById('results1').classList.remove('show');
+        }
+
+        function resetForm2() {
+            document.getElementById('age2').value = '';
+            document.getElementById('rhr2').value = '';
+            document.getElementById('formula2').value = 'standard';
+            document.getElementById('intensity2').value = '50';
+            document.getElementById('intensityValue2').textContent = '50';
+            document.getElementById('results2').classList.remove('show');
+        }
+
+        // Allow Enter key to calculate
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('age1').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') calculateMethod1();
+            });
+            document.getElementById('age2').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') calculateMethod2();
+            });
+            document.getElementById('rhr2').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') calculateMethod2();
+            });
+        });
+    </script>
+</body>
+</html>
